@@ -1,36 +1,32 @@
+import { Box, Chip, Collapse, Grid, IconButton, Paper, Stack, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import Table from '@mui/material/Table';
-import Title from '@Components/Title';
-import { CardStyled } from '@Components/Utils';
-import ClearIcon from '@mui/icons-material/Clear';
-import SearchIcon from '@mui/icons-material/Search';
-import { Box, CardHeader, Divider, FormControl, InputAdornment, TextField, Typography, Container, CardContent, TableRow, TableCell, IconButton, Collapse, TableHead, TableBody, TableContainer, Paper, Grid, Stack, Chip } from '@mui/material';
-import { GridColumns } from '@mui/x-data-grid';
 import * as React from 'react';
 
+import { SocketTopic } from '@Common/const';
+import { CarrierActiveObject, CarrierAvailableObject, CarrierRespType, UploadImageType } from '@Common/types';
+import DisplayImage from '@Components/DisplayImage';
+import MapFollowShipper, { LongLatData } from '@Components/MapFollowShipper';
+import { defaultImageUploadState } from '@Components/UploadImages';
+import { convertNumberToCurrency } from '@Helpers/data.optimize';
+import { selectFile } from '@Helpers/image.handle';
+import carrierService, { CarrierDetailType } from '@Services/carrier.service';
+import fileService from '@Services/file.service';
+import mapService from '@Services/map.service';
+import { stompClient } from '@Services/socket.service';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { CarrierActiveObject, CarrierAvailableObject, CarrierRespType, SocketMessageFormat, UploadImageType } from '@Common/types';
-import carrierService, { CarrierDetailType } from '@Services/carrier.service';
-import DisplayImage from '@Components/DisplayImage';
-import { selectFile } from '@Helpers/image.handle';
-import { defaultImageUploadState } from '@Components/UploadImages';
-import fileService from '@Services/file.service';
-import { useSearchParams } from 'react-router-dom';
 import { toInteger } from 'lodash';
-import { stompClient } from '@Services/socket.service';
-import { SocketTopic } from '@Common/const';
 import mapboxgl from 'mapbox-gl';
-import MapFollowShipper, { LongLatData } from '@Components/MapFollowShipper';
-import mapService from '@Services/map.service';
+import { useSearchParams } from 'react-router-dom';
 
-
+const additionalOptions = {};
 
 export interface LocationCarrier {
   userId?: number;
   latitude?: number;
   longitude?: number;
 }
-
+let map;
 mapboxgl.accessToken = "pk.eyJ1IjoiZGF2aWRjYWxob3VuIiwiYSI6ImNraXlxaW8wMTB4MXIyeG02aDZzbnBxcmkifQ.OOxFfzUTBphTe1wEZqhjnw";
 
 const CollapseComponent = (props: {
@@ -40,11 +36,12 @@ const CollapseComponent = (props: {
   const [searchParams, setSearchParams] = useSearchParams();
   const [locationCarrier, setLocationCarrier] = React.useState<LocationCarrier>({
     latitude: carrier.latitudeNewest,
-    longitude: carrier.longtitudeNewest,
+    longitude: carrier.longitudeNewest,
     userId: carrier.accountId
   });
   const [carrierDetail, setCarrierDetail] = React.useState<CarrierDetailType>();
   const [open, setOpen] = React.useState<boolean>(false);
+
 
   React.useEffect(() => {
     const id = toInteger(searchParams.get("id"));
@@ -55,13 +52,15 @@ const CollapseComponent = (props: {
     if (id === carrier.id) {
       fetchCarrierDetail(id);
       setOpen(true);
-      stompClient.subscribe(
-        `/${SocketTopic.LOCATION}/${carrier?.accountId}`,
-        (message) => {
-          const body: LocationCarrier = JSON.parse(message.body);
-          setLocationCarrier(body);
-        }
-      );
+      stompClient.connect({}, function () {
+        stompClient.subscribe(
+          `/${SocketTopic.LOCATION}/${carrier?.accountId}`,
+          (message) => {
+            const body: LocationCarrier = JSON.parse(message.body);
+            setLocationCarrier(body);
+          }
+        );
+      });
     } else {
       setOpen(false);
 
@@ -96,7 +95,7 @@ const CollapseComponent = (props: {
                     </Stack>
                     <Stack direction={"row"} justifyContent={"space-between"} spacing={2}>
                       <Typography>Tổng tiền chưa bàn giao</Typography>
-                      <Typography>{carrierDetail?.totalCashNotPayment}</Typography>
+                      <Typography>{convertNumberToCurrency(carrierDetail?.totalCashNotPayment || 0)}</Typography>
                     </Stack>
 
                   </Stack>
@@ -151,7 +150,7 @@ function Row(props: {
     if (carrier) {
       fetchLocation({
         latitude: carrier.latitudeNewest,
-        longtitude: carrier.longtitudeNewest
+        longtitude: carrier.longitudeNewest
       })
     }
 
@@ -187,8 +186,8 @@ function Row(props: {
         </TableCell>
         <TableCell align="right">{carrier.name}</TableCell>
         <TableCell align="right">{addressText}</TableCell>
-        <TableCell align="right">{carrier.isActive ? <Chip color={CarrierActiveObject.active.color} label={CarrierActiveObject.active?.label || ""} /> : <Chip color={CarrierActiveObject.inactive.color} label={CarrierActiveObject.inactive.label || ""} />}</TableCell>
-        <TableCell align="center">{carrier.available ? <Chip color={CarrierAvailableObject.available?.color || "warning"} label={CarrierActiveObject.available?.label || "Không xác định"} /> : <Chip color={CarrierAvailableObject.inavailable?.color || "warning"} label={CarrierAvailableObject.inavailable?.label || "Không xác định"} />}</TableCell>
+        <TableCell align="right">{carrier.active ? <Chip color={CarrierActiveObject.active.color} label={CarrierActiveObject.active?.label || ""} /> : <Chip color={CarrierActiveObject.inactive.color} label={CarrierActiveObject.inactive.label || ""} />}</TableCell>
+        <TableCell align="right">{carrier.available ? <Chip color={CarrierAvailableObject.available.color} label={CarrierAvailableObject.available.label} /> : <Chip color={CarrierAvailableObject.inavailable.color} label={CarrierAvailableObject.inavailable?.label} />}</TableCell>
       </TableRow>
       <CollapseComponent carrier={carrier} />
     </React.Fragment>

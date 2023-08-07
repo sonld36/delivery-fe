@@ -3,7 +3,7 @@ import { store } from "@App/store";
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://delivery-system.onrender.com/api",
+  baseURL: "https://delivery-system.onrender.com/api/",
   headers: {
     "Content-type": "application/json",
   },
