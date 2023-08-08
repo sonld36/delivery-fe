@@ -16,6 +16,8 @@ export type ShopRegisterForm = {
   phoneNumber: string;
   name: string;
   addresses: AddressToSave[];
+  latitude: number;
+  longitude: number;
 };
 
 export type ProductType = {
@@ -312,6 +314,7 @@ export type Deliverier = {
   deliveryId?: number;
   deliveryName: string;
   deliveryPhone?: string;
+  distance?: number;
 };
 
 export type ProductInOrderByDP = {
@@ -373,6 +376,7 @@ export type CarrierRespType = {
   active: boolean;
   available: boolean;
   pathAvatar: string;
+  distance: number;
 };
 
 export type CarrierInfoManagerType = {
