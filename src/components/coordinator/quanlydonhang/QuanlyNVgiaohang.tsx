@@ -1,4 +1,4 @@
-import { Box, Chip, Collapse, Grid, IconButton, Paper, Stack, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import { Box, Chip, Collapse, Grid, IconButton, Paper, Stack, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, Typography } from '@mui/material';
 import Table from '@mui/material/Table';
 import * as React from 'react';
 
@@ -18,6 +18,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { toInteger } from 'lodash';
 import mapboxgl from 'mapbox-gl';
 import { useSearchParams } from 'react-router-dom';
+import TablePaginationActions from '@mui/material/TablePagination/TablePaginationActions';
 
 const additionalOptions = {};
 
@@ -197,18 +198,24 @@ function Row(props: {
 function QuanlyNVgiaohang() {
   const [carriers, setCarriers] = React.useState<CarrierRespType[]>([]);
   const [totalPage, setTotalPage] = React.useState<number>(0);
+  const [currentPage, setCurrentPage] = React.useState(0);
 
 
 
   React.useEffect(() => {
     const getCarrierData = async () => {
-      const resp = await carrierService.getAll(1);
+      const resp = await carrierService.getAll(currentPage + 1);
       setCarriers(resp.data.listData);
       setTotalPage(resp.data.totalPage);
     }
 
     getCarrierData();
-  }, []);
+  }, [currentPage]);
+
+  const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number) => {
+    setCurrentPage(newPage);
+  }
 
   return (
     <TableContainer component={Paper}>
@@ -229,6 +236,26 @@ function QuanlyNVgiaohang() {
             <Row key={carrier.id} carrier={carrier} />
           ))}
         </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25, { label: 'All', value: -1 }]}
+              colSpan={3}
+              count={totalPage * 5}
+              rowsPerPage={5}
+              page={currentPage}
+              SelectProps={{
+                inputProps: {
+                  'aria-label': 'rows per page',
+                },
+                native: true,
+              }}
+              onPageChange={handleChangePage}
+              // onRowsPerPageChange={handleChangeRowsPerPage}
+              ActionsComponent={TablePaginationActions}
+            />
+          </TableRow>
+        </TableFooter>
       </Table>
     </TableContainer>
   )

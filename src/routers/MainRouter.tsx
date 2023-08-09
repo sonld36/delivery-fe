@@ -46,12 +46,13 @@ import { useCallback, useEffect } from "react";
 import { stompClient } from "@Services/socket.service";
 import { SocketSubcribe, roles } from "@Common/socket.subcribe";
 import { SocketTopic } from "@Common/const";
-import { SocketMessageFormat } from "@Common/types";
+import { OrderLogType, SocketMessageFormat } from "@Common/types";
 import { openToast } from "@Features/toast/toastSlice";
 import { status } from "@Common/toast.const";
 import { fetchOrderWithPaging, selectOrder } from "@Features/order/orderSlice";
 import Overview from "@Components/custom-manage/Overview";
 import Customer from "@Components/ship-manage/Customer";
+import { addNewLog } from "@Features/log/logSlice";
 
 export default function MainRouter() {
   const auth = useAppSelector(selectUser);
@@ -91,6 +92,16 @@ export default function MainRouter() {
           );
         }
       );
+
+      stompClient.subscribe(`/${SocketTopic.LOG}/${user.id}`, (message) => {
+        const resp: OrderLogType = JSON.parse(
+          message.body
+        );
+
+        dispatch(addNewLog(resp));
+
+
+      });
 
       subcribeSocket();
     });

@@ -1,4 +1,4 @@
-import { ProductTop10Type } from '@Common/types';
+import { OrderLogType, ProductTop10Type, SocketMessageFormat } from '@Common/types';
 import RecentOrder from '@Components/order/RecentOrder';
 import Title from '@Components/Title';
 import { CardHeaderStyled, CardStyled } from '@Components/Utils';
@@ -12,9 +12,13 @@ import { useEffect, useState } from 'react';
 import ReactApexChart, { Props } from 'react-apexcharts';
 import { TypeOf } from 'zod';
 import { useAppDispatch, useAppSelector } from '@App/hook';
-import { fetchAllOrderLogForShop, selectLog } from '@Features/log/logSlice';
+import { addNewLog, fetchAllOrderLogForShop, selectLog } from '@Features/log/logSlice';
 import LogActivity from '@Components/log-activity/LogActivity';
 import ItemLog from '@Components/log-activity/ItemLog';
+import { stompClient } from '@Services/socket.service';
+import { SocketTopic } from '@Common/const';
+import { selectUser } from '@Features/user/userSlice';
+import { message } from '@Common/toast.const';
 
 export type PartnersRegisterForm = TypeOf<typeof partnersRegistrationSchema>
 
@@ -33,6 +37,7 @@ function OverviewPage({ task }: Props) {
   const [pageForLog, setPageForLog] = useState(1);
 
   const logs = useAppSelector(selectLog);
+  const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
   useEffect(() => {
     dispatch(fetchAllOrderLogForShop(pageForLog));
@@ -106,6 +111,7 @@ function OverviewPage({ task }: Props) {
     ],
   };
 
+
   useEffect(() => {
     const fetchTop10Product = async () => {
       var date = new Date(new Date().setDate(new Date().getDate() - 30));
@@ -140,6 +146,7 @@ function OverviewPage({ task }: Props) {
       setDoneData(done);
       setCategoriesChart(categories);
     }
+
 
 
     const fetchOrderInThirtyDays = async () => {
