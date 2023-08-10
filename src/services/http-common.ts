@@ -3,11 +3,18 @@ import { store } from "@App/store";
 import axios from "axios";
 // https://delivery-system.onrender.com
 const api = axios.create({
-  baseURL: "https://delivery-system.onrender.com/api/",
+  baseURL: "https://delivery-service-7elcupesca-uc.a.run.app/api/",
   headers: {
     "Content-type": "application/json",
   },
 });
+
+// const api = axios.create({
+//   baseURL: "http://localhost:8080/api/",
+//   headers: {
+//     "Content-type": "application/json",
+//   },
+// });
 
 api.interceptors.response.use(
   (response) => {

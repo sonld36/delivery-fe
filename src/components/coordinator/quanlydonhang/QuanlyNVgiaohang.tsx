@@ -1,4 +1,4 @@
-import { Box, Chip, Collapse, Grid, IconButton, Paper, Stack, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, Typography } from '@mui/material';
+import { Box, Chip, CircularProgress, Collapse, Grid, IconButton, Modal, Paper, Stack, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, Typography } from '@mui/material';
 import Table from '@mui/material/Table';
 import * as React from 'react';
 
@@ -19,8 +19,15 @@ import { toInteger } from 'lodash';
 import mapboxgl from 'mapbox-gl';
 import { useSearchParams } from 'react-router-dom';
 import TablePaginationActions from '@mui/material/TablePagination/TablePaginationActions';
+import Empty from '@Components/Empty';
 
 const additionalOptions = {};
+
+const style = {
+  position: 'absolute' as 'absolute',
+  top: '50%',
+  left: '50%',
+};
 
 export interface LocationCarrier {
   userId?: number;
@@ -199,14 +206,16 @@ function QuanlyNVgiaohang() {
   const [carriers, setCarriers] = React.useState<CarrierRespType[]>([]);
   const [totalPage, setTotalPage] = React.useState<number>(0);
   const [currentPage, setCurrentPage] = React.useState(0);
-
+  const [loading, setLoading] = React.useState(false);
 
 
   React.useEffect(() => {
     const getCarrierData = async () => {
+      setLoading(true);
       const resp = await carrierService.getAll(currentPage + 1);
       setCarriers(resp.data.listData);
       setTotalPage(resp.data.totalPage);
+      setLoading(false);
     }
 
     getCarrierData();
@@ -232,9 +241,13 @@ function QuanlyNVgiaohang() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {carriers.map((carrier) => (
+          {loading ? <Modal component={"center"} open={loading}>
+            <Box sx={style}>
+              <CircularProgress size={50} />
+            </Box>
+          </Modal> : (carriers.length > 0 ? carriers.map((carrier) => (
             <Row key={carrier.id} carrier={carrier} />
-          ))}
+          )) : <Empty>Không tồn tại nhân viên giao hàng nào</Empty>)}
         </TableBody>
         <TableFooter>
           <TableRow>

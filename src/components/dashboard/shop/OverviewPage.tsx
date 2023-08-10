@@ -5,7 +5,7 @@ import { CardHeaderStyled, CardStyled } from '@Components/Utils';
 import Statistic from '@Components/dashboard/shop/Statistic';
 import { getTodayTime } from '@Helpers/data.optimize';
 import { partnersRegistrationSchema } from '@Helpers/form.validate';
-import { Box, Grid, Paper } from '@mui/material';
+import { Box, CircularProgress, Grid, Paper } from '@mui/material';
 import orderService from '@Services/order.service';
 import shopService from '@Services/shop.service';
 import { useEffect, useState } from 'react';
@@ -19,6 +19,7 @@ import { stompClient } from '@Services/socket.service';
 import { SocketTopic } from '@Common/const';
 import { selectUser } from '@Features/user/userSlice';
 import { message } from '@Common/toast.const';
+import Empty from '@Components/Empty';
 
 export type PartnersRegisterForm = TypeOf<typeof partnersRegistrationSchema>
 
@@ -306,7 +307,7 @@ function OverviewPage({ task }: Props) {
               </Paper>
             </Grid>
             <Grid item xs={12} md={12} lg={12}>
-              <LogActivity childrend={<ItemLog logs={logs.logs} />} />
+              <LogActivity childrend={logs.logs.length > 0 ? <ItemLog logs={logs.logs} /> : <Empty>Không có hoạt động mới</Empty>} />
             </Grid>
           </Grid>
         </Grid>
