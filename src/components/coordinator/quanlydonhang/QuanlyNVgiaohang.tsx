@@ -12,7 +12,7 @@ import { selectFile } from '@Helpers/image.handle';
 import carrierService, { CarrierDetailType } from '@Services/carrier.service';
 import fileService from '@Services/file.service';
 import mapService from '@Services/map.service';
-import { stompClient } from '@Services/socket.service';
+import stompClient from '@Services/socket.service';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { toInteger } from 'lodash';
